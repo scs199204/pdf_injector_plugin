@@ -1,0 +1,4 @@
+/* kintone標準のフィールドタイトルと似たスタイルに調整 */
+.kintoneplugin-title-custom {
+  font-size: 14px; /* 標準フィールドのサイズに合わせる */
+}
