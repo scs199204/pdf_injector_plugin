@@ -73,9 +73,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
         //formatプロパティが設定されている場合のみ
         if (param.format) {
           const formatItem = param.format;
-          //カンマ編集
           if (formatItem === 'comma') {
-            targetText = new Intl.NumberFormat('ja-JP').format(targetText);
+            targetText = new Intl.NumberFormat('ja-JP').format(targetText); //カンマ編集
           }
           //日付・日時
           if (formatItem === 'date' || formatItem === 'datetime') {
@@ -99,7 +98,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
             }
             targetText = date.toLocaleString('ja-JP', options).replace(/\//g, '-'); // toLocaleString()でローカルタイムゾーンの形式に変換
           }
-          //}
         }
         if (param.align) {
           if (param.align === 'right') {
@@ -116,9 +114,9 @@ import { PDFDocument, rgb } from 'pdf-lib';
         if (param.postfix) {
           joinText += param.postfix;
         }
-        const drawTextOptions = { x: x, y: y, font: customFont, size: param.size };
+        const drawTextOptions = { x: x, y: y, font: customFont, size: param.size }; //drawText用のパラメタ作成
+
         //maxWidthが効かないため、sizeに応じてmaxWidthに収まる文字数分を抽出する
-        //if (param.hasOwnProperty('maxWidth')) {
         if (param.maxWidth) {
           //文字の幅と、maxWidthを比較して、maxWidthに収まらない場合収まる文字数分のみ描画
           const currentWidth = customFont.widthOfTextAtSize(joinText, param.size);
@@ -132,10 +130,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
 
         //文字色の設定
         if (param.color) {
-          const hexValue = param.color.slice(1);
-
-          // 各色成分を2桁ずつに分割
-          const rHex = hexValue.slice(0, 2);
+          const hexValue = param.color.slice(1); //先頭の#カット
+          const rHex = hexValue.slice(0, 2); // 各色成分を2桁ずつに分割
           const gHex = hexValue.slice(2, 4);
           const bHex = hexValue.slice(4, 6);
 
@@ -146,23 +142,21 @@ import { PDFDocument, rgb } from 'pdf-lib';
           red = red > 255 ? 1 : red / 255;
           green = green > 255 ? 1 : green / 255;
           blue = blue > 255 ? 1 : blue / 255;
-          drawTextOptions.color = rgb(red, green, blue);
+          drawTextOptions.color = rgb(red, green, blue); //色追加
         }
 
-        /*
-      //maxWidthが効かないため、使わない
-      if (param.hasOwnProperty('maxWidth')) {
-        drawTextOptions.maxWidth = param.maxWidth;
+        //maxWidthが効かないため、使わない
+        //if (param.hasOwnProperty('maxWidth')) {
+        //drawTextOptions.maxWidth = param.maxWidth;
         //drawTextOptions.lineHeight = param.lineHeight;
-        drawTextOptions.wordBreaks = [];
-      }
-      */
+        //drawTextOptions.wordBreaks = [];
+        // }
+
         const { width: pageWidth, height: pageHeight } = page.getSize();
-        //const width = param.hasOwnProperty('maxWidth') ? param.maxWidth : customFont.widthOfTextAtSize(joinText, param.size);
         const width = param.maxWidth ? param.maxWidth : customFont.widthOfTextAtSize(joinText, param.size);
         //描画位置がページの範囲内かどうかのチェック
         if (isInCoordinateRange(x, y, width, customFont.heightAtSize(param.size), pageWidth, pageHeight)) {
-          page.drawText(joinText, drawTextOptions);
+          page.drawText(joinText, drawTextOptions); //PDFへ出力
         } else {
           throw new Error(param.fieldCode + 'がページの範囲外です。');
         }
@@ -237,25 +231,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
   }
 
   //★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  /** urlからフォントファイルを取得して、arrayBufferへ変換する
-   * @param {string } url フォントファイルが保存されているurl
-   * @returns {arrayBuffer} フォントファイルをarrayBufferに変換したもの
-   */
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  async function getFontDataFromGitHubPages(url) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch font from ${url}: ${response.statusText}`);
-      }
-      return await response.arrayBuffer(); // ArrayBufferとして取得
-    } catch (error) {
-      console.error('Error fetching font from GitHub Pages:', error);
-      throw error; // エラーを再スローして呼び出し元で処理できるようにする
-    }
-  }
-
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★★
   /** 描画する要素がPDFの範囲内にあるか
    * @param {number} coordinateX 要素の開始点(x座標)
    * @param {number} coordinateY  要素の開始点(y座標)
@@ -285,7 +260,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
     }
     const templatePdfFileKey = await getPdfFileKey(CONFIG_PDF.appId, CONFIG_PDF.recordId, CONFIG_PDF.attachment); //ひな形pdfのfileKey取得
     if (!templatePdfFileKey) {
-      alert('請求書雛形PDFが設定されていません。');
+      await kintone.showNotification('ERROR', '請求書雛形PDFが設定されていません。');
+      //alert('請求書雛形PDFが設定されていません。');
       return;
     }
     try {
@@ -296,17 +272,12 @@ import { PDFDocument, rgb } from 'pdf-lib';
       let fontBytes;
       let customFont;
       try {
-        //githubPagesUrlがある時は、対象のurlからフォントファイル取得、ない場合はkintoneアプリのレコードから取得
-        if (CONFIG_FONT.hasOwnProperty('url')) {
-          const fontUrl = CONFIG_FONT.url; //GitHub Pagesのurl
-          fontBytes = await getFontDataFromGitHubPages(fontUrl); // フォントファイルをGitHub Pagesから取得
-        } else {
-          const fontFileKey = await getPdfFileKey(CONFIG_FONT.appId, CONFIG_FONT.recordId, CONFIG_FONT.attachment); //フォントファイルのfileKey取得
-          if (!fontFileKey) {
-            throw new Error('フォントが設定されていません。');
-          }
-          fontBytes = await getFileData(fontFileKey); // フォントファイルを取得
+        const fontFileKey = await getPdfFileKey(CONFIG_FONT.appId, CONFIG_FONT.recordId, CONFIG_FONT.attachment); //フォントファイルのfileKey取得
+        if (!fontFileKey) {
+          throw new Error('フォントが設定されていません。');
         }
+        fontBytes = await getFileData(fontFileKey); // フォントファイルを取得
+
         customFont = await pdfDoc.embedFont(fontBytes, { subset: true }); //サブセット化すると、フォントによっては一部の文字が表示されなくなる可能性あるのでフォント変更時は確認すること
         //customFont = await pdfDoc.embedFont(fontBytes); //ドキュメントにフォントを埋め込む(ファイルサイズが大きくなる)
       } catch (error) {
@@ -471,14 +442,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
                   subtotalColumn.x += subtotalColumn.maxWidth; //maxWidthの指定があれば、最大幅の位置で右寄せする
                   subtotalColumn.align = 'right'; //小計行は、全て右寄せ→明細行の位置と合わせることができないので設定しないようにした
                 }
-                //formatに「comma」追加→カンマ編集時にstringへ変換してwidthOfTextAtSizeでエラーにならないようにする
-                //if (subtotalColumn.hasOwnProperty('format')) {
-                //if (!subtotalColumn.format.includes('comma')) {
-                //subtotalColumn.format.push('comma');
-                //}
-                //} else {
-                //subtotalColumn.format = ['comma'];
-                //}
                 subtotalColumn.format = 'comma';
                 const height = drawTextPdf(subtotalColumn, subtotal, subtotal_y); //subtotalがtrueの項目のみ小計描画
               }
@@ -496,9 +459,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      //const appInfo = await kintone.api(kintone.api.url('/k/v1/app.json', true), 'GET', { id: kintone.app.getId() });
-      //const 会社名スペースカット = record.会社名.value.replace(/\s+/g, '');
-      //a.download = `請求書_${会社名スペースカット}(${record.請求番号.value}).pdf`;
       let downLoadFileName = CONFIG_PDF.outputFileName;
       if (CONFIG_PDF.useFileNameField) {
         downLoadFileName += '(' + record[CONFIG_PDF.useFileNameField].value + ')';
@@ -509,7 +469,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('PDF出力エラー:', error.message);
-      alert('PDF出力に失敗しました。\n' + error.message);
+      await kintone.showNotification('ERROR', 'PDF出力に失敗しました。\n' + error.message);
+      //alert('PDF出力に失敗しました。\n' + error.message);
     }
   }
   //★★★★★★★★★★★★★★★★★★★★★★★★★★★★
@@ -527,13 +488,15 @@ import { PDFDocument, rgb } from 'pdf-lib';
 
     printButton.className = 'kintoneplugin-button-dialog-ok';
     printButton.addEventListener('click', async () => {
-      printButton.disabled = true; // クリックされたらボタンを無効化
-      printButton.className = 'kintoneplugin-button-disabled';
+      //printButton.disabled = true; // クリックされたらボタンを無効化
+      //printButton.className = 'kintoneplugin-button-disabled';
+      await kintone.showLoading('VISIBLE');
       try {
         await pdfCreate(record);
       } finally {
-        printButton.disabled = false; // 処理が完了したらボタンを有効化
-        printButton.className = 'kintoneplugin-button-dialog-ok';
+        //printButton.disabled = false; // 処理が完了したらボタンを有効化
+        //printButton.className = 'kintoneplugin-button-dialog-ok';
+        await kintone.showLoading('HIDDEN');
       }
     });
     let buttonSpaceName = 'ButtonSpace';

@@ -4,21 +4,21 @@
 
     <div class="setting-section">
       <h2 class="section-title">ボタン設定</h2>
-      <div v-if="errors.button.hasError" class="error-messageButton">
+      <div v-if="errors.button.hasError" class="error-message">
         <p>{{ errors.button.message }}</p>
       </div>
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">ボタンを表示するフィールド名<span class="required-mark">*</span></label>
-          <select v-model="configButton.spaceField">
+          <label class="label-text" for="button-spaceField">ボタンを表示するフィールド名 <span class="required-mark">*</span></label>
+          <select v-model="configButton.spaceField" id="button-spaceField">
             <option v-for="itemSpace in optionSpace" :value="itemSpace.id" :key="itemSpace.id">
               {{ itemSpace.code }}
             </option>
           </select>
         </div>
         <div class="input-wrapper">
-          <label class="label-text">ボタン名称:</label>
-          <input type="text" v-model="configButton.textContent" class="text-input" />
+          <label class="label-text" for="button-textContent">ボタン名称:</label>
+          <input type="text" v-model="configButton.textContent" id="button-textContent" class="text-input" />
         </div>
       </div>
     </div>
@@ -27,29 +27,29 @@
 
     <div class="setting-section">
       <h2 class="section-title">PDF雛形ファイル設定</h2>
-      <div v-if="errors.pdf.hasError" class="error-messagePdf">
+      <div v-if="errors.pdf.hasError" class="error-message">
         <p>{{ errors.pdf.message }}</p>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">アプリＩＤ:<span class="required-mark">*</span></label>
-          <input type="number" v-model="configPdf.appId" @change="appIdChange($event, 'pdf')" class="text-input" :min="1" />
+          <label class="label-text" for="pdf-appId">アプリＩＤ:<span class="required-mark">*</span></label>
+          <input type="number" v-model="configPdf.appId" @change="appIdChange($event, 'pdf')" id="pdf-appId" class="text-input" :class="{ 'input-error': inputNumeric('pdfAppId') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">アプリ名:</label>
-          <input type="text" v-model="configPdf.name" class="text-input" readonly />
+          <label class="label-text" for="pdf-appName">アプリ名:</label>
+          <input type="text" v-model="configPdf.name" id="pdf-appName" class="text-input" readonly />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">レコード番号:<span class="required-mark">*</span></label>
-          <input type="number" v-model="configPdf.recordId" class="text-input" :min="1" />
+          <label class="label-text" for="pdf-recordId">レコード番号:<span class="required-mark">*</span></label>
+          <input type="number" v-model="configPdf.recordId" id="pdf-recordId" class="text-input" :class="{ 'input-error': inputNumeric('pdfRecordId') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">フィールド名<span class="required-mark">*</span></label>
-          <select v-model="configPdf.attachment" :class="{ 'input-error': isSameFieldError(configPdf, configFont) }">
+          <label class="label-text" for="pdf-attachment">フィールド名<span class="required-mark">*</span></label>
+          <select v-model="configPdf.attachment" id="pdf-attachment" :class="{ 'input-error': isSameFieldError(configPdf, configFont) }">
             <option v-for="itemPdfAttachmentFields in optionPdfAttachmentFields" :value="itemPdfAttachmentFields.id" :key="itemPdfAttachmentFields.id">
               {{ itemPdfAttachmentFields.code }}
             </option>
@@ -59,12 +59,12 @@
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">出力ファイル名:<span class="required-mark">*</span></label>
-          <input type="text" v-model="configPdf.outputFileName" class="text-input" />
+          <label class="label-text" for="pdf-outputFileName">出力ファイル名:<span class="required-mark">*</span></label>
+          <input type="text" v-model="configPdf.outputFileName" id="pdf-outputFileName" class="text-input" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">ファイル名に使用するフィールド名</label>
-          <select v-model="configPdf.useFileNameField">
+          <label class="label-text" for="pdf-useFileNameField">ファイル名に使用するフィールド名</label>
+          <select v-model="configPdf.useFileNameField" id="pdf-useFileNameField">
             <option v-for="itemPdfUseFileNameFields in optionPdfUseFileNameFields" :value="itemPdfUseFileNameFields.id" :key="itemPdfUseFileNameFields.id">
               {{ itemPdfUseFileNameFields.code }}
             </option>
@@ -77,29 +77,29 @@
 
     <div class="setting-section">
       <h2 class="section-title">フォントファイル設定</h2>
-      <div v-if="errors.font.hasError" class="error-messageFont">
+      <div v-if="errors.font.hasError" class="error-message">
         <p>{{ errors.font.message }}</p>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">アプリＩＤ:<span class="required-mark">*</span></label>
-          <input type="number" v-model="configFont.appId" @change="appIdChange($event, 'font')" class="text-input" :min="1" />
+          <label class="label-text" for="font-appId">アプリＩＤ:<span class="required-mark">*</span></label>
+          <input type="number" v-model="configFont.appId" @change="appIdChange($event, 'font')" id="font-appId" class="text-input" :class="{ 'input-error': inputNumeric('fontAppId') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">アプリ名:</label>
-          <input type="text" v-model="configFont.name" class="text-input" readonly />
+          <label class="label-text" for="font-appName">アプリ名:</label>
+          <input type="text" v-model="configFont.name" id="font-appName" class="text-input" readonly />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">レコード番号:<span class="required-mark">*</span></label>
-          <input type="number" v-model="configFont.recordId" class="text-input" :min="1" />
+          <label class="label-text" for="font-recordId">レコード番号:<span class="required-mark">*</span></label>
+          <input type="number" v-model="configFont.recordId" id="font-recordId" class="text-input" :class="{ 'input-error': inputNumeric('fontRecordId') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">フィールド名<span class="required-mark">*</span></label>
-          <select v-model="configFont.attachment" :class="{ 'input-error': isSameFieldError(configPdf, configFont) }">
+          <label class="label-text" for="font-attachment">フィールド名<span class="required-mark">*</span></label>
+          <select v-model="configFont.attachment" id="font-attachment" :class="{ 'input-error': isSameFieldError(configPdf, configFont) }">
             <option v-for="itemFontAttachmentFields in optionFontAttachmentFields" :value="itemFontAttachmentFields.id" :key="itemFontAttachmentFields.id">
               {{ itemFontAttachmentFields.code }}
             </option>
@@ -112,29 +112,29 @@
 
     <div class="setting-section">
       <h2 class="section-title">ページ番号設定</h2>
-      <div v-if="errors.page.hasError" class="error-messagePage">
+      <div v-if="errors.page.hasError" class="error-message">
         <p>{{ errors.page.message }}</p>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">左下を起点とした横位置:</label>
-          <input type="number" v-model="configPagecount.x" class="text-input" :min="0" />
+          <label class="label-text" for="pagecount-x">左下を起点とした横位置:</label>
+          <input type="number" v-model="configPagecount.x" id="pagecount-x" class="text-input" :class="{ 'input-error': inputNumeric('pagecountX') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">左下を起点とした縦位置:</label>
-          <input type="number" v-model="configPagecount.y" class="text-input" :min="0" />
+          <label class="label-text" for="pagecount-y">左下を起点とした縦位置:</label>
+          <input type="number" v-model="configPagecount.y" id="pagecount-y" class="text-input" :class="{ 'input-error': inputNumeric('pagecountY') }" />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">文字サイズ:</label>
-          <input type="number" v-model="configPagecount.size" class="text-input" :min="1" />
+          <label class="label-text" for="pagecount-size">文字サイズ:</label>
+          <input type="number" v-model="configPagecount.size" id="pagecount-size" class="text-input" :class="{ 'input-error': inputNumeric('pagecountSize') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">形式</label>
-          <select v-model="configPagecount.type">
+          <label class="label-text" for="pagecount-type">形式</label>
+          <select v-model="configPagecount.type" id="pagecount-type">
             <option v-for="itemPageCountType in optionPageCountType" :value="itemPageCountType.id" :key="itemPageCountType.id">
               {{ itemPageCountType.type }}
             </option>
@@ -147,7 +147,7 @@
 
     <div class="setting-section">
       <h2 class="section-title">描画する文字列の設定</h2>
-      <div v-if="errors.text.hasError" class="error-messageText">
+      <div v-if="errors.text.hasError" class="error-message">
         <p>{{ errors.text.message }}</p>
       </div>
 
@@ -171,7 +171,7 @@
         <tbody>
           <tr v-for="(configTextRow, index) in configText" :key="configTextRow.id">
             <td>
-              <select v-model="configTextRow.fieldCode" :class="{ 'input-error': isDuplicateError(configTextRow, configText, 'fieldCode') }">
+              <select v-model="configTextRow.fieldCode" :id="`textRow-fieldCode-${configTextRow.id}`" :name="`textRow-fieldCode-${configTextRow.id}`">
                 <option v-for="itemText in optionText" :value="itemText.id" :key="itemText.id">
                   {{ itemText.code }}
                 </option>
@@ -179,19 +179,19 @@
             </td>
 
             <td>
-              <input type="number" v-model="configTextRow.x" class="text-input" :min="0" />
+              <input type="number" v-model="configTextRow.x" :id="`textRow-x-${configTextRow.id}`" :name="`textRow-x-${configTextRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="number" v-model="configTextRow.y" class="text-input" :min="0" />
+              <input type="number" v-model="configTextRow.y" :id="`textRow-y-${configTextRow.id}`" :name="`textRow-y-${configTextRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="number" v-model="configTextRow.size" class="text-input" :min="1" />
+              <input type="number" v-model="configTextRow.size" :id="`textRow-size-${configTextRow.id}`" :name="`textRow-size-${configTextRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <select v-model="configTextRow.align">
+              <select v-model="configTextRow.align" :id="`textRow-align-${configTextRow.id}`" :name="`textRow-align-${configTextRow.id}`">
                 <option v-for="itemTextAlign in optionTextAlign" :value="itemTextAlign.id" :key="itemTextAlign.id">
                   {{ itemTextAlign.type }}
                 </option>
@@ -199,7 +199,7 @@
             </td>
 
             <td>
-              <select v-model="configTextRow.targetPage">
+              <select v-model="configTextRow.targetPage" :id="`textRow-targetPage-${configTextRow.id}`" :name="`textRow-targetPage-${configTextRow.id}`">
                 <option v-for="itemTargetPage in optionTargetPage" :value="itemTargetPage.id" :key="itemTargetPage.id">
                   {{ itemTargetPage.type }}
                 </option>
@@ -207,7 +207,7 @@
             </td>
 
             <td>
-              <select v-model="configTextRow.format">
+              <select v-model="configTextRow.format" :id="`textRow-format-${configTextRow.id}`" :name="`textRow-format-${configTextRow.id}`">
                 <option v-for="itemTextFormat in optionTextFormat" :value="itemTextFormat.id" :key="itemTextFormat.id">
                   {{ itemTextFormat.type }}
                 </option>
@@ -216,21 +216,21 @@
 
             <td>
               <div class="color-picker-wrapper">
-                <input type="color" v-model="configTextRow.color" class="color-input" />
+                <input type="color" v-model="configTextRow.color" :id="`textRow-color-${configTextRow.id}`" :name="`textRow-color-${configTextRow.id}`" class="color-input" />
                 <span class="color-display" :style="{ backgroundColor: configTextRow.color }">{{ configTextRow.color }}</span>
               </div>
             </td>
 
             <td>
-              <input type="number" v-model="configTextRow.maxWidth" class="text-input" :min="0" />
+              <input type="number" v-model="configTextRow.maxWidth" :id="`textRow-maxWidth-${configTextRow.id}`" :name="`textRow-maxWidth-${configTextRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="text" v-model="configTextRow.prefix" class="text-input" />
+              <input type="text" v-model="configTextRow.prefix" :id="`textRow-prefix-${configTextRow.id}`" :name="`textRow-prefix-${configTextRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="text" v-model="configTextRow.postfix" class="text-input" />
+              <input type="text" v-model="configTextRow.postfix" :id="`textRow-postfix-${configTextRow.id}`" :name="`textRow-postfix-${configTextRow.id}`" class="text-input" />
             </td>
 
             <td class="table-actions">
@@ -246,7 +246,7 @@
 
     <div class="setting-section">
       <h2 class="section-title">描画する画像の設定</h2>
-      <div v-if="errors.image.hasError" class="error-messageImage">
+      <div v-if="errors.image.hasError" class="error-message">
         <p>{{ errors.image.message }}</p>
       </div>
 
@@ -265,7 +265,12 @@
         <tbody>
           <tr v-for="(configImageRow, index) in configImage" :key="configImageRow.id">
             <td>
-              <select v-model="configImageRow.fieldCode" :class="{ 'input-error': isDuplicateError(configImageRow, configImage, 'fieldCode') }">
+              <select
+                v-model="configImageRow.fieldCode"
+                :id="`imageRow-fieldCode-${configImageRow.id}`"
+                :name="`imageRow-fieldCode-${configImageRow.id}`"
+                :class="{ 'input-error': isDuplicateError(configImageRow, configImage, 'fieldCode') }"
+              >
                 <option v-for="itemImage in optionImage" :value="itemImage.id" :key="itemImage.id">
                   {{ itemImage.code }}
                 </option>
@@ -273,23 +278,23 @@
             </td>
 
             <td>
-              <input type="number" v-model="configImageRow.x" class="text-input" :min="0" />
+              <input type="number" v-model="configImageRow.x" :id="`imageRow-x-${configImageRow.id}`" :name="`imageRow-x-${configImageRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="number" v-model="configImageRow.y" class="text-input" :min="0" />
+              <input type="number" v-model="configImageRow.y" :id="`imageRow-y-${configImageRow.id}`" :name="`imageRow-y-${configImageRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="number" v-model="configImageRow.widthRatio" class="text-input" :min="1" />
+              <input type="number" v-model="configImageRow.widthRatio" :id="`imageRow-widthRatio-${configImageRow.id}`" :name="`imageRow-widthRatio-${configImageRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="number" v-model="configImageRow.width" class="text-input" :min="1" />
+              <input type="number" v-model="configImageRow.width" :id="`imageRow-width-${configImageRow.id}`" :name="`imageRow-width-${configImageRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <select v-model="configImageRow.targetPage">
+              <select v-model="configImageRow.targetPage" :id="`imageRow-targetPage-${configImageRow.id}`" :name="`imageRow-targetPage-${configImageRow.id}`">
                 <option v-for="itemTargetPage in optionTargetPage" :value="itemTargetPage.id" :key="itemTargetPage.id">
                   {{ itemTargetPage.type }}
                 </option>
@@ -308,48 +313,48 @@
 
     <div class="setting-section">
       <h2 class="section-title">改ページを行うサブテーブル描画の設定</h2>
-      <div v-if="errors.pageBreakTable.hasError" class="error-messagePageBreakTable">
+      <div v-if="errors.pageBreakTable.hasError" class="error-message">
         <p>{{ errors.pageBreakTable.message }}</p>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">フィールド名</label>
-          <select v-model="configPageBreakTable.fieldCode" @change="targetTableChange($event, 'pageBreak')">
+          <label class="label-text" for="pageBreakTable-spaceField">フィールド名</label>
+          <select v-model="configPageBreakTable.fieldCode" id="pageBreakTable-spaceField" @change="targetTableChange($event, 'pageBreak')">
             <option v-for="itemTable in optionTable" :value="itemTable.id" :key="itemTable.id">
               {{ itemTable.code }}
             </option>
           </select>
         </div>
         <div class="input-wrapper">
-          <label class="label-text">１ページあたりの最大行数:</label>
-          <input type="number" v-model="configPageBreakTable.maxRow" class="text-input" :min="1" />
+          <label class="label-text" for="pageBreakTable-maxRow">１ページあたりの最大行数:</label>
+          <input type="number" v-model="configPageBreakTable.maxRow" id="pageBreakTable-maxRow" class="text-input" :class="{ 'input-error': inputNumeric('pageBreakTableMaxRow') }" />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">先頭行の縦位置:</label>
-          <input type="number" v-model="configPageBreakTable.y" class="text-input" :min="1" />
+          <label class="label-text" for="pageBreakTable-y">先頭行の縦位置:</label>
+          <input type="number" v-model="configPageBreakTable.y" id="pageBreakTable-y" class="text-input" :class="{ 'input-error': inputNumeric('pageBreakTableY') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">１行の高さ:</label>
-          <input type="number" v-model="configPageBreakTable.y_Offset" class="text-input" :min="1" />
+          <label class="label-text" for="pageBreakTable-y_Offset">１行の高さ:</label>
+          <input type="number" v-model="configPageBreakTable.y_Offset" id="pageBreakTable-y_Offset" class="text-input" :class="{ 'input-error': inputNumeric('pageBreakTableY_Offset') }" />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">１行の高さに文字の高さを加える</label>
-          <select v-model="configPageBreakTable.y_OffsetFontSize">
+          <label class="label-text" for="pageBreakTable-y_OffsetFontSize">１行の高さに文字の高さを加える</label>
+          <select v-model="configPageBreakTable.y_OffsetFontSize" id="pageBreakTable-y_OffsetFontSize">
             <option v-for="itemBool in optionBool" :value="itemBool.id" :key="itemBool.id">
               {{ itemBool.type }}
             </option>
           </select>
         </div>
         <div class="input-wrapper">
-          <label class="label-text">小計行を表示する</label>
-          <select v-model="configPageBreakTable.subtotal">
+          <label class="label-text" for="pageBreakTable-subtotal">小計行を表示する</label>
+          <select v-model="configPageBreakTable.subtotal" id="pageBreakTable-subtotal">
             <option v-for="itemBool in optionBool" :value="itemBool.id" :key="itemBool.id">
               {{ itemBool.type }}
             </option>
@@ -376,7 +381,12 @@
         <tbody>
           <tr v-for="(configPageBreakTableRow, index) in configPageBreakTable.column" :key="configPageBreakTableRow.id">
             <td>
-              <select v-model="configPageBreakTableRow.fieldCode" :class="{ 'input-error': isDuplicateError(configPageBreakTableRow, configPageBreakTable.column, 'fieldCode') }">
+              <select
+                v-model="configPageBreakTableRow.fieldCode"
+                :id="`pageBreakTableRow-fieldCode-${configPageBreakTableRow.id}`"
+                :name="`pageBreakTableRow-fieldCode-${configPageBreakTableRow.id}`"
+                :class="{ 'input-error': isDuplicateError(configPageBreakTableRow, configPageBreakTable.column, 'fieldCode') }"
+              >
                 <option v-for="itemText in optionPageBreakTableText" :value="itemText.id" :key="itemText.id">
                   {{ itemText.code }}
                 </option>
@@ -384,15 +394,27 @@
             </td>
 
             <td>
-              <input type="number" v-model="configPageBreakTableRow.x" class="text-input" :min="0" />
+              <input
+                type="number"
+                v-model="configPageBreakTableRow.x"
+                :id="`pageBreakTableRow-x-${configPageBreakTableRow.id}`"
+                :name="`pageBreakTableRow-x-${configPageBreakTableRow.id}`"
+                class="text-input"
+              />
             </td>
 
             <td>
-              <input type="number" v-model="configPageBreakTableRow.size" class="text-input" :min="1" />
+              <input
+                type="number"
+                v-model="configPageBreakTableRow.size"
+                :id="`pageBreakTableRow-size-${configPageBreakTableRow.id}`"
+                :name="`pageBreakTableRow-size-${configPageBreakTableRow.id}`"
+                class="text-input"
+              />
             </td>
 
             <td>
-              <select v-model="configPageBreakTableRow.align">
+              <select v-model="configPageBreakTableRow.align" :id="`pageBreakTableRow-align-${configPageBreakTableRow.id}`" :name="`pageBreakTableRow-align-${configPageBreakTableRow.id}`">
                 <option v-for="itemTextAlign in optionTextAlign" :value="itemTextAlign.id" :key="itemTextAlign.id">
                   {{ itemTextAlign.type }}
                 </option>
@@ -400,7 +422,7 @@
             </td>
 
             <td>
-              <select v-model="configPageBreakTableRow.format">
+              <select v-model="configPageBreakTableRow.format" :id="`pageBreakTableRow-format-${configPageBreakTableRow.id}`" :name="`pageBreakTableRow-format-${configPageBreakTableRow.id}`">
                 <option v-for="itemTextFormat in optionTextFormat" :value="itemTextFormat.id" :key="itemTextFormat.id">
                   {{ itemTextFormat.type }}
                 </option>
@@ -409,25 +431,49 @@
 
             <td>
               <div class="color-picker-wrapper">
-                <input type="color" v-model="configPageBreakTableRow.color" class="color-input" />
+                <input
+                  type="color"
+                  v-model="configPageBreakTableRow.color"
+                  :id="`pageBreakTableRow-color-${configPageBreakTableRow.id}`"
+                  :name="`pageBreakTableRow-color-${configPageBreakTableRow.id}`"
+                  class="color-input"
+                />
                 <span class="color-display" :style="{ backgroundColor: configPageBreakTableRow.color }">{{ configPageBreakTableRow.color }}</span>
               </div>
             </td>
 
             <td>
-              <input type="number" v-model="configPageBreakTableRow.maxWidth" class="text-input" :min="0" />
+              <input
+                type="number"
+                v-model="configPageBreakTableRow.maxWidth"
+                :id="`pageBreakTableRow-maxWidth-${configPageBreakTableRow.id}`"
+                :name="`pageBreakTableRow-maxWidth-${configPageBreakTableRow.id}`"
+                class="text-input"
+              />
             </td>
 
             <td>
-              <input type="text" v-model="configPageBreakTableRow.prefix" class="text-input" />
+              <input
+                type="text"
+                v-model="configPageBreakTableRow.prefix"
+                :id="`pageBreakTableRow-prefix-${configPageBreakTableRow.id}`"
+                :name="`pageBreakTableRow-prefix-${configPageBreakTableRow.id}`"
+                class="text-input"
+              />
             </td>
 
             <td>
-              <input type="text" v-model="configPageBreakTableRow.postfix" class="text-input" />
+              <input
+                type="text"
+                v-model="configPageBreakTableRow.postfix"
+                :id="`pageBreakTableRow-postfix-${configPageBreakTableRow.id}`"
+                :name="`pageBreakTableRow-postfix-${configPageBreakTableRow.id}`"
+                class="text-input"
+              />
             </td>
 
             <td>
-              <select v-model="configPageBreakTableRow.calc">
+              <select v-model="configPageBreakTableRow.calc" :id="`pageBreakTableRow-calc-${configPageBreakTableRow.id}`" :name="`pageBreakTableRow-calc-${configPageBreakTableRow.id}`">
                 <option v-for="itemCalc in optionCalc" :value="itemCalc.id" :key="itemCalc.id">
                   {{ itemCalc.type }}
                 </option>
@@ -445,48 +491,48 @@
 
     <div class="setting-section">
       <h2 class="section-title">その他のサブテーブル描画の設定</h2>
-      <div v-if="errors.table.hasError" class="error-messageTable">
+      <div v-if="errors.table.hasError" class="error-message">
         <p>{{ errors.table.message }}</p>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">フィールド名</label>
-          <select v-model="configTable.fieldCode" @change="targetTableChange($event, 'other')">
+          <label class="label-text" for="table-fieldCode">フィールド名</label>
+          <select v-model="configTable.fieldCode" id="table-fieldCode" @change="targetTableChange($event, 'other')">
             <option v-for="itemTable in optionTable" :value="itemTable.id" :key="itemTable.id">
               {{ itemTable.code }}
             </option>
           </select>
         </div>
         <div class="input-wrapper">
-          <label class="label-text">最大行数:</label>
-          <input type="number" v-model="configTable.maxRow" class="text-input" :min="1" />
+          <label class="label-text" for="table-maxRow">最大行数:</label>
+          <input type="number" v-model="configTable.maxRow" id="table-maxRow" class="text-input" :class="{ 'input-error': inputNumeric('tableMaxRow') }" />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">先頭行の縦位置:</label>
-          <input type="number" v-model="configTable.y" class="text-input" :min="1" />
+          <label class="label-text" for="table-y">先頭行の縦位置:</label>
+          <input type="number" v-model="configTable.y" id="table-y" class="text-input" :class="{ 'input-error': inputNumeric('tableY') }" />
         </div>
         <div class="input-wrapper">
-          <label class="label-text">１行の高さ:</label>
-          <input type="number" v-model="configTable.y_Offset" class="text-input" :min="1" />
+          <label class="label-text" for="table-y_Offset">１行の高さ:</label>
+          <input type="number" v-model="configTable.y_Offset" id="table-y_Offset" class="text-input" :class="{ 'input-error': inputNumeric('tableY_Offset') }" />
         </div>
       </div>
 
       <div class="app-config-row">
         <div class="input-wrapper">
-          <label class="label-text">１行の高さに文字の高さを加える</label>
-          <select v-model="configTable.y_OffsetFontSize">
+          <label class="label-text" for="table-y_OffsetFontSize">１行の高さに文字の高さを加える</label>
+          <select v-model="configTable.y_OffsetFontSize" id="table-y_OffsetFontSize">
             <option v-for="itemBool in optionBool" :value="itemBool.id" :key="itemBool.id">
               {{ itemBool.type }}
             </option>
           </select>
         </div>
         <div class="input-wrapper">
-          <label class="label-text">対象ページ</label>
-          <select v-model="configTable.targetPage">
+          <label class="label-text" for="table-targetPage">対象ページ</label>
+          <select v-model="configTable.targetPage" id="table-targetPage">
             <option v-for="itemTargetPage in optionTargetPage" :value="itemTargetPage.id" :key="itemTargetPage.id">
               {{ itemTargetPage.type }}
             </option>
@@ -512,7 +558,12 @@
         <tbody>
           <tr v-for="(configTableRow, index) in configTable.column" :key="configTableRow.id">
             <td>
-              <select v-model="configTableRow.fieldCode" :class="{ 'input-error': isDuplicateError(configTableRow, configTable.column, 'fieldCode') }">
+              <select
+                v-model="configTableRow.fieldCode"
+                :id="`tableRow-fieldCode-${configTableRow.id}`"
+                :name="`tableRow-fieldCode-${configTableRow.id}`"
+                :class="{ 'input-error': isDuplicateError(configTableRow, configTable.column, 'fieldCode') }"
+              >
                 <option v-for="itemText in optionTableText" :value="itemText.id" :key="itemText.id">
                   {{ itemText.code }}
                 </option>
@@ -520,15 +571,15 @@
             </td>
 
             <td>
-              <input type="number" v-model="configTableRow.x" class="text-input" :min="0" />
+              <input type="number" v-model="configTableRow.x" :id="`tableRow-x-${configTableRow.id}`" :name="`tableRow-x-${configTableRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="number" v-model="configTableRow.size" class="text-input" :min="1" />
+              <input type="number" v-model="configTableRow.size" :id="`tableRow-size-${configTableRow.id}`" :name="`tableRow-size-${configTableRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <select v-model="configTableRow.align">
+              <select v-model="configTableRow.align" :id="`tableRow-align-${configTableRow.id}`" :name="`tableRow-align-${configTableRow.id}`">
                 <option v-for="itemTextAlign in optionTextAlign" :value="itemTextAlign.id" :key="itemTextAlign.id">
                   {{ itemTextAlign.type }}
                 </option>
@@ -536,7 +587,7 @@
             </td>
 
             <td>
-              <select v-model="configTableRow.format">
+              <select v-model="configTableRow.format" :id="`tableRow-format-${configTableRow.id}`" :name="`tableRow-format-${configTableRow.id}`">
                 <option v-for="itemTextFormat in optionTextFormat" :value="itemTextFormat.id" :key="itemTextFormat.id">
                   {{ itemTextFormat.type }}
                 </option>
@@ -545,21 +596,21 @@
 
             <td>
               <div class="color-picker-wrapper">
-                <input type="color" v-model="configTableRow.color" class="color-input" />
+                <input type="color" v-model="configTableRow.color" :id="`tableRow-color-${configTableRow.id}`" :name="`tableRow-color-${configTableRow.id}`" class="color-input" />
                 <span class="color-display" :style="{ backgroundColor: configTableRow.color }">{{ configTableRow.color }}</span>
               </div>
             </td>
 
             <td>
-              <input type="number" v-model="configTableRow.maxWidth" class="text-input" :min="0" />
+              <input type="number" v-model="configTableRow.maxWidth" :id="`tableRow-maxWidth-${configTableRow.id}`" :name="`tableRow-maxWidth-${configTableRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="text" v-model="configTableRow.prefix" class="text-input" />
+              <input type="text" v-model="configTableRow.prefix" :id="`tableRow-prefix-${configTableRow.id}`" :name="`tableRow-prefix-${configTableRow.id}`" class="text-input" />
             </td>
 
             <td>
-              <input type="text" v-model="configTableRow.postfix" class="text-input" />
+              <input type="text" v-model="configTableRow.postfix" :id="`tableRow-postfix-${configTableRow.id}`" :name="`tableRow-postfix-${configTableRow.id}`" class="text-input" />
             </td>
 
             <td class="table-actions">
@@ -581,7 +632,6 @@
 <script setup>
 import { ref } from 'vue';
 
-//config.jsから渡される引数(変数、関数)
 const props = defineProps({
   initialConfig: Object,
   optionText: Array,
@@ -605,7 +655,7 @@ const props = defineProps({
   },
 });
 
-//ページ番号設定
+//ドロップダウンで指定する内容
 const optionPageCountType = ref([
   { id: 'no', type: '不要' },
   { id: 'n/n', type: 'n/n' },
@@ -663,7 +713,7 @@ const allApps = ref(props.allApps);
 const optionPdfUseFileNameFields = ref(props.optionPdfUseFileNameFields);
 const targetAppAllText = ref(props.targetAppAllText);
 
-// 変更：エラー関連の変数を一つのオブジェクトに集約
+// エラー関連の変数
 const errors = ref({
   button: { hasError: false, message: '' },
   pdf: { hasError: false, message: '' },
@@ -675,7 +725,114 @@ const errors = ref({
   table: { hasError: false, message: '' },
 });
 
-// テーブル内でのフィールド重複のバリデーション
+// 数値項目を定義(範囲、整数のみ許可、エラー時のメッセージ等)
+const numericFields = {
+  pdfAppId: { min: 1, max: 999999, isInteger: true, config: configPdf.value, key: 'appId', errorKey: 'pdf', message: 'アプリIDの数値を正しく入力してください' },
+  pdfRecordId: { min: 1, max: 999999, isInteger: true, config: configPdf.value, key: 'recordId', errorKey: 'pdf', message: 'レコード番号の数値を正しく入力してください' },
+  fontAppId: { min: 1, max: 999999, isInteger: true, config: configFont.value, key: 'appId', errorKey: 'font', message: 'アプリIDの数値を正しく入力してください' },
+  fontRecordId: { min: 1, max: 999999, isInteger: true, config: configFont.value, key: 'recordId', errorKey: 'font', message: 'レコード番号の数値を正しく入力してください' },
+  pagecountX: { min: 0, max: 9999, isInteger: false, config: configPagecount.value, key: 'x', errorKey: 'page', message: '横位置の数値を正しく入力してください' },
+  pagecountY: { min: 0, max: 9999, isInteger: false, config: configPagecount.value, key: 'y', errorKey: 'page', message: '縦位置の数値を正しく入力してください' },
+  pagecountSize: { min: 0, max: 99, isInteger: false, config: configPagecount.value, key: 'size', errorKey: 'page', message: 'サイズの数値を正しく入力してください' },
+  pageBreakTableMaxRow: {
+    min: 0,
+    max: 999,
+    isInteger: true,
+    config: configPageBreakTable.value,
+    key: 'maxRow',
+    errorKey: 'pageBreakTable',
+    message: '１ページあたりの最大行の数値を正しく入力してください',
+  },
+  pageBreakTableY: { min: 0, max: 9999, isInteger: false, config: configPageBreakTable.value, key: 'y', errorKey: 'pageBreakTable', message: '先頭行の縦位置の数値を正しく入力してください' },
+  pageBreakTableY_Offset: { min: 0, max: 9999, isInteger: false, config: configPageBreakTable.value, key: 'y_Offset', errorKey: 'pageBreakTable', message: '行間の数値を正しく入力してください' },
+  tableMaxRow: { min: 0, max: 999, isInteger: true, config: configTable.value, key: 'maxRow', errorKey: 'table', message: '１ページあたりの最大行の数値を正しく入力してください' },
+  tableY: { min: 0, max: 9999, isInteger: false, config: configTable.value, key: 'y', errorKey: 'table', message: '先頭行の縦位置の数値を正しく入力してください' },
+  tableY_Offset: { min: 0, max: 9999, isInteger: false, config: configTable.value, key: 'y_Offset', errorKey: 'table', message: '行間の数値を正しく入力してください' },
+};
+
+// テーブル以外の必須項目を定義
+const requiredFields = [
+  { config: configButton.value, key: 'spaceField', errorKey: 'button', message: 'ボタンを表示するフィールド名は、必須項目です' },
+  { config: configPdf.value, key: 'appId', errorKey: 'pdf', message: 'PDF雛形ファイルのアプリIDは、必須項目です' },
+  { config: configPdf.value, key: 'recordId', errorKey: 'pdf', message: 'PDF雛形ファイルのレコード番号は、必須項目です' },
+  { config: configPdf.value, key: 'attachment', errorKey: 'pdf', message: 'PDF雛形ファイルのフィールド名は、必須項目です' },
+  { config: configPdf.value, key: 'outputFileName', errorKey: 'pdf', message: '出力ファイル名は、必須項目です' },
+  { config: configFont.value, key: 'appId', errorKey: 'font', message: 'フォントファイルのアプリIDは、必須項目です' },
+  { config: configFont.value, key: 'recordId', errorKey: 'font', message: 'フォントファイルのレコード番号は、必須項目です' },
+  { config: configFont.value, key: 'attachment', errorKey: 'font', message: 'フォントファイルのフィールド名は、必須項目です' },
+];
+
+// テーブル内の必須項目を定義
+const requiredTableFields = [
+  {
+    config: configText.value,
+    keys: [
+      { name: 'フィールドコード', code: 'fieldCode' },
+      { name: '横位置', code: 'x' },
+      { name: '縦位置', code: 'y' },
+      { name: '文字サイズ', code: 'size' },
+    ],
+    errorKey: 'text',
+    message: '未入力です。',
+  },
+  {
+    config: configImage.value,
+    keys: [
+      { name: 'フィールドコード', code: 'fieldCode' },
+      { name: '横位置', code: 'x' },
+      { name: '縦位置', code: 'y' },
+    ],
+    errorKey: 'image',
+    message: '未入力です。',
+  },
+  {
+    config: configPageBreakTable.value.column,
+    keys: [
+      { name: 'フィールドコード', code: 'fieldCode' },
+      { name: '横位置', code: 'x' },
+      { name: '文字サイズ', code: 'size' },
+    ],
+    errorKey: 'pageBreakTable',
+    message: '未入力です。',
+  },
+  {
+    config: configTable.value.column,
+    keys: [
+      { name: 'フィールドコード', code: 'fieldCode' },
+      { name: '横位置', code: 'x' },
+      { name: '文字サイズ', code: 'size' },
+    ],
+    errorKey: 'table',
+    message: '未入力です。',
+  },
+];
+
+// 数値項目の入力時チェック(isNumericErrorのラッパー関数)
+const inputNumeric = (targetItem) => {
+  return isNumericError(numericFields[targetItem]);
+};
+
+//数値の入力チェック
+const isNumericError = (param) => {
+  const target = param.config[param.key];
+  const min = param.min;
+  const max = param.max;
+  const isInteger = param.isInteger;
+  if (target < min || target > max) {
+    return true;
+  }
+  if (isInteger && !Number.isInteger(Number(target))) {
+    return true;
+  }
+  return false;
+};
+
+/** テーブル内でのフィールド重複のバリデーション
+ * @param param チェック対象要素(param[prop]がarrayに複数存在するかチェック)
+ * @param array 重複をチェックする配列
+ * @param prop チェック対象プロパティ
+ * @returns 重複がある場合、true
+ */
 const isDuplicateError = (param, array, prop) => {
   // 空文字は重複とみなさない
   if (!param[prop]) return false;
@@ -684,24 +841,64 @@ const isDuplicateError = (param, array, prop) => {
   return count > 1;
 };
 
-//ＰＤＦ雛形とフォントが同じフィールドを指定している
+/** ＰＤＦ雛形とフォントが同じフィールドを指定している
+ * @param configPdf PDF雛形の設定内容
+ * @param configFont フォントの設定内容
+ * @returns 同じアプリID、レコード番号、添付ファイルを指定している場合、true
+ */
 const isSameFieldError = (configPdf, configFont) => {
   return configPdf.appId == configFont.appId && configPdf.recordId == configFont.recordId && configPdf.attachment == configFont.attachment;
 };
 
-// 変更：登録時に全体のエラーチェックを強化
+// 登録時に全体のエラーチェックを強化
 const validate = () => {
-  let isValid = true;
   // エラーを一括でリセット
   Object.keys(errors.value).forEach((key) => {
     errors.value[key] = { hasError: false, message: '' };
   });
 
+  // テーブル以外の必須項目をループでチェック
+  requiredFields.forEach((field) => {
+    if (!field.config[field.key]) {
+      errors.value[field.errorKey] = { hasError: true, message: field.message };
+    }
+  });
+
+  //テーブル内の必須項目をループでチェック
+  for (const field of requiredTableFields) {
+    //設定画面のテーブルの各行
+    for (const [index, row] of Object.entries(field.config)) {
+      //keysの配列
+      for (const key of field.keys) {
+        //未入力
+        if (!row[key.code]) {
+          //先頭行の場合、他の項目に入力があるばあいエラー
+          if (index == 0) {
+            for (const keyCheck of field.keys) {
+              if (row[keyCheck.code]) {
+                errors.value[field.errorKey] = { hasError: true, message: key.name + 'が' + field.message };
+              }
+            }
+          } else {
+            errors.value[field.errorKey] = { hasError: true, message: key.name + 'が' + field.message };
+          }
+        }
+      }
+    }
+  }
+
+  // 数値項目の入力内容チェック
+  for (const field in numericFields) {
+    if (isNumericError(numericFields[field])) {
+      errors.value[numericFields[field].errorKey] = { hasError: true, message: numericFields[field].message };
+    }
+  }
+
+  // PDFファイルとフォントファイルが同じフィールドを設定しているかのチェック
   if (isSameFieldError(configPdf.value, configFont.value)) {
     const message = 'ＰＤＦファイルとフォントファイルで同じフィールドを設定しています';
     errors.value.pdf = { hasError: true, message };
     errors.value.font = { hasError: true, message };
-    isValid = false;
   }
 
   // テーブル内のフィールドコード重複をチェックするヘルパー関数
@@ -710,7 +907,6 @@ const validate = () => {
     const uniqueFields = new Set(allFields);
     if (allFields.length !== uniqueFields.size) {
       errors.value[errorKey] = { hasError: true, message: errorMessage };
-      isValid = false; // エラーが見つかってもチェックを続ける
     }
   };
 
@@ -720,9 +916,20 @@ const validate = () => {
   checkDuplicates(configPageBreakTable.value.column, 'fieldCode', 'pageBreakTable', '改ページを行うサブテーブルで、同じフィールドコードが設定されています。');
   checkDuplicates(configTable.value.column, 'fieldCode', 'table', 'その他のサブテーブルで、同じフィールドコードが設定されています。');
 
-  return isValid;
+  // エラーオブジェクト全体をチェックして最終的なisValidを決定
+  for (const key in errors.value) {
+    if (errors.value[key].hasError) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
+/** アプリIDを変更した際のイベント
+ * @param event イベントオブジェクト
+ * @param target 対象(pdfもしくはfont)
+ */
 const appIdChange = async (event, target) => {
   const appId = event.target.value;
   // 変更対象のコンフィグと選択肢を決定
@@ -750,11 +957,11 @@ const targetTableChange = async (event, target) => {
 
   if (target === 'pageBreak') {
     // ファクトリ関数を使って新しい行でリセット
-    configPageBreakTable.value.column = [createNewPageBreakTableRow()];
+    configPageBreakTable.value.column = [createPageBreakTableRow()];
     optionPageBreakTableText.value = fields;
   } else {
     // ファクトリ関数を使って新しい行でリセット
-    configTable.value.column = [createNewTableRow()];
+    configTable.value.column = [createTableRow()];
     optionTableText.value = fields;
   }
 };
@@ -784,8 +991,7 @@ const register = () => {
     });
   } catch (e) {
     console.error('name: ' + e.name + ' message: ' + e.message);
-    // 変更：新しいエラーオブジェクトに情報を格納
-    errors.value.button = { hasError: true, message: `設定の保存中にエラーが発生しました。\nエラー内容: ${e.message}` }; // ユーザーに分かりやすいメッセージを追加
+    errors.value.button = { hasError: true, message: `設定の保存中にエラーが発生しました。\nエラー内容: ${e.message}` };
   }
 };
 
@@ -794,70 +1000,21 @@ const cancel = () => {
   window.location.href = '/k/admin/app/' + kintone.app.getId() + '/plugin/';
 };
 
-// 変更：ここから下の行追加・削除処理を共通化
 // 各テーブル行のデフォルト値を生成するファクトリ関数群
-const createNewTextRow = () => ({
-  id: Date.now(),
-  fieldCode: '',
-  x: '',
-  y: '',
-  size: '',
-  align: 'left',
-  targetPage: 'all',
-  format: 'no',
-  color: '#000000',
-  maxWidth: '',
-  prefix: '',
-  postfix: '',
-});
-
-const createNewImageRow = () => ({
-  id: Date.now(),
-  fieldCode: '',
-  x: '',
-  y: '',
-  widthRatio: '',
-  width: '',
-  targetPage: 'all',
-});
-
-const createNewPageBreakTableRow = () => ({
-  id: Date.now(),
-  fieldCode: '',
-  x: '',
-  size: '',
-  align: 'left',
-  format: 'no',
-  color: '#000000',
-  maxWidth: '',
-  prefix: '',
-  postfix: '',
-  calc: 'no',
-});
-
-const createNewTableRow = () => ({
-  id: Date.now(),
-  fieldCode: '',
-  x: '',
-  size: '',
-  align: 'left',
-  format: 'no',
-  color: '#000000',
-  maxWidth: '',
-  prefix: '',
-  postfix: '',
-});
+const createTextRow = () => ({ id: Date.now(), fieldCode: '', x: '', y: '', size: '', align: 'left', targetPage: 'all', format: 'no', color: '#000000', maxWidth: '', prefix: '', postfix: '' });
+const createImageRow = () => ({ id: Date.now(), fieldCode: '', x: '', y: '', widthRatio: '', width: '', targetPage: 'all' });
+const createPageBreakTableRow = () => ({ id: Date.now(), fieldCode: '', x: '', size: '', align: 'left', format: 'no', color: '#000000', maxWidth: '', prefix: '', postfix: '', calc: 'no' });
+const createTableRow = () => ({ id: Date.now(), fieldCode: '', x: '', size: '', align: 'left', format: 'no', color: '#000000', maxWidth: '', prefix: '', postfix: '' });
 
 //描画する文字列のテーブル行追加
 const addItemText = (index) => {
-  configText.value.splice(index + 1, 0, createNewTextRow());
+  configText.value.splice(index + 1, 0, createTextRow());
 };
 
 //描画する文字列のテーブル行削除
 const removeItemText = (index) => {
-  // 変更: 最後の1行を削除する場合、新しい空の行を追加する
   if (configText.value.length === 1) {
-    configText.value[0] = createNewTextRow();
+    configText.value[0] = createTextRow(); // 最後の1行を削除する場合、新しい空の行を追加する
   } else {
     configText.value.splice(index, 1);
   }
@@ -865,14 +1022,13 @@ const removeItemText = (index) => {
 
 //描画する画像のテーブル行追加
 const addItemImage = (index) => {
-  configImage.value.splice(index + 1, 0, createNewImageRow());
+  configImage.value.splice(index + 1, 0, createImageRow());
 };
 
 //描画する画像のテーブル行削除
 const removeItemImage = (index) => {
-  // 変更: 最後の1行を削除する場合、新しい空の行を追加する
   if (configImage.value.length === 1) {
-    configImage.value[0] = createNewImageRow();
+    configImage.value[0] = createImageRow(); // 最後の1行を削除する場合、新しい空の行を追加する
   } else {
     configImage.value.splice(index, 1);
   }
@@ -880,14 +1036,13 @@ const removeItemImage = (index) => {
 
 //改ページを行うサブテーブルのテーブル行追加
 const addItemPageBreakTableText = (index) => {
-  configPageBreakTable.value.column.splice(index + 1, 0, createNewPageBreakTableRow());
+  configPageBreakTable.value.column.splice(index + 1, 0, createPageBreakTableRow());
 };
 
 //改ページを行うサブテーブルのテーブル行削除
 const removeItemPageBreakTableText = (index) => {
-  // 変更: 最後の1行を削除する場合、新しい空の行を追加する
   if (configPageBreakTable.value.column.length === 1) {
-    configPageBreakTable.value.column[0] = createNewPageBreakTableRow();
+    configPageBreakTable.value.column[0] = createPageBreakTableRow(); // 最後の1行を削除する場合、新しい空の行を追加する
   } else {
     configPageBreakTable.value.column.splice(index, 1);
   }
@@ -895,14 +1050,13 @@ const removeItemPageBreakTableText = (index) => {
 
 //その他のサブテーブルのテーブル行追加
 const addItemTableText = (index) => {
-  configTable.value.column.splice(index + 1, 0, createNewTableRow());
+  configTable.value.column.splice(index + 1, 0, createTableRow());
 };
 
 //その他のサブテーブルのテーブル行削除
 const removeItemTableText = (index) => {
-  // 変更: 最後の1行を削除する場合、新しい空の行を追加する
   if (configTable.value.column.length === 1) {
-    configTable.value.column[0] = createNewTableRow();
+    configTable.value.column[0] = createTableRow(); // 最後の1行を削除する場合、新しい空の行を追加する
   } else {
     configTable.value.column.splice(index, 1);
   }
@@ -1014,14 +1168,7 @@ select {
 }
 
 /* エラーメッセージ用の共通スタイルを追加 */
-.error-messageButton,
-.error-messagePdf,
-.error-messageFont,
-.error-messagePage,
-.error-messageText,
-.error-messageImage,
-.error-messagePageBreakTable,
-.error-messageTable {
+.error-message {
   color: #e74c3c;
   background-color: #fff2f2;
   border: 1px solid #ffc8c8;

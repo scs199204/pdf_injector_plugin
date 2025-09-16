@@ -35,7 +35,7 @@ export default defineConfig(() => {
           },
           format: 'iife',
           inlineDynamicImports: true,
-          name: `${target}Plugin`,
+          //name: `${target}Plugin`,
         },
       },
       sourcemap: 'inline',
