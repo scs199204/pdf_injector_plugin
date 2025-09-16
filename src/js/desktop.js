@@ -3,7 +3,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
 
 ((PLUGIN_ID) => {
   'use strict';
-  //const params = sdpParam.pdfLib; //パラメタ(sdpParam_pdfLib.js)
   const CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
   if (!CONFIG) {
     return false;
@@ -65,46 +64,47 @@ import { PDFDocument, rgb } from 'pdf-lib';
     const page = argPage;
     const customFont = argCustomFont;
 
+    // param:PDFへ描画するためのパラメタ
+    // record:kintoneレコードもしくはサブテーブルの1行
+    // y:縦位置
     return (param, record, y) => {
       try {
         let x = param.x;
         let targetText = record[param.fieldCode].value == null ? '' : record[param.fieldCode].value; //null もしくは undefinedの場合,空文字''
 
-        //formatプロパティが設定されている場合のみ
-        if (param.format) {
-          const formatItem = param.format;
-          if (formatItem === 'comma') {
-            targetText = new Intl.NumberFormat('ja-JP').format(targetText); //カンマ編集
+        //カンマ編集
+        if (param.format === 'comma') {
+          targetText = new Intl.NumberFormat('ja-JP').format(targetText); //カンマ編集
+        }
+        //日付・日時
+        if (param.format === 'date' || param.format === 'datetime') {
+          const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          };
+          //日時の場合
+          if (param.format === 'datetime') {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+            options.hour12 = false; // 24時間表示
           }
-          //日付・日時
-          if (formatItem === 'date' || formatItem === 'datetime') {
-            const options = {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-            };
-            //日時の場合
-            if (formatItem === 'datetime') {
-              options.hour = '2-digit';
-              options.minute = '2-digit';
-              options.hour12 = false; // 24時間表示
-            }
 
-            let date;
-            if (targetText.includes('T')) {
-              date = new Date(targetText); // 日時フィールドの場合（例: '2025-09-02T15:00:00Z'）
-            } else {
-              date = new Date(targetText + 'T00:00:00Z'); // 日付フィールド場合（例: '2025-09-03'）タイムゾーンを統一するために、'T00:00:00Z'を加えてUTCとして解釈させる
-            }
-            targetText = date.toLocaleString('ja-JP', options).replace(/\//g, '-'); // toLocaleString()でローカルタイムゾーンの形式に変換
+          let date;
+          if (targetText.includes('T')) {
+            date = new Date(targetText); // 日時フィールドの場合（例: '2025-09-02T15:00:00Z'）
+          } else {
+            date = new Date(targetText + 'T00:00:00Z'); // 日付フィールド場合（例: '2025-09-03'）タイムゾーンを統一するために、'T00:00:00Z'を加えてUTCとして解釈させる
           }
+          targetText = date.toLocaleString('ja-JP', options).replace(/\//g, '-'); // toLocaleString()でローカルタイムゾーンの形式に変換
         }
-        if (param.align) {
-          if (param.align === 'right') {
-            x -= customFont.widthOfTextAtSize(targetText, param.size); //drawTextは左端を指定、paramは揃えたい右端を指定しているので文字数分ずらす
-            // 例)パラメタ：100　文字サイズ：3　の場合、100-3=97　をdrawTextに渡すと左端が97なので文字の右端が100で揃えられる。
-          }
+
+        //文字位置
+        if (param.align === 'right') {
+          x -= customFont.widthOfTextAtSize(targetText, param.size); //drawTextは左端を指定、paramは揃えたい右端を指定しているので文字数分ずらす
+          // 例)パラメタ：100　文字サイズ：3　の場合、100-3=97　をdrawTextに渡すと左端が97なので文字の右端が100で揃えられる。
         }
+
         //プロパティがある場合、文字列を結合する
         let joinText = '';
         if (param.prefix) {
@@ -145,15 +145,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
           drawTextOptions.color = rgb(red, green, blue); //色追加
         }
 
-        //maxWidthが効かないため、使わない
-        //if (param.hasOwnProperty('maxWidth')) {
-        //drawTextOptions.maxWidth = param.maxWidth;
-        //drawTextOptions.lineHeight = param.lineHeight;
-        //drawTextOptions.wordBreaks = [];
-        // }
-
         const { width: pageWidth, height: pageHeight } = page.getSize();
-        const width = param.maxWidth ? param.maxWidth : customFont.widthOfTextAtSize(joinText, param.size);
+        const width = param.maxWidth ? param.maxWidth : customFont.widthOfTextAtSize(joinText, param.size); //指定されたサイズで描画された文字列の幅を測定
         //描画位置がページの範囲内かどうかのチェック
         if (isInCoordinateRange(x, y, width, customFont.heightAtSize(param.size), pageWidth, pageHeight)) {
           page.drawText(joinText, drawTextOptions); //PDFへ出力
@@ -200,12 +193,10 @@ import { PDFDocument, rgb } from 'pdf-lib';
       subtotal[column.fieldCode] = { value: 0 };
     }
 
-    if (column.calc) {
-      if (column.calc == 'sum' && Number.isFinite(targetValue)) {
-        subtotal[column.fieldCode].value += targetValue; //数値の場合、合計
-      } else if (column.calc == 'count') {
-        subtotal[column.fieldCode].value += 1; //数値以外の場合、件数
-      }
+    if (column.calc == 'sum' && Number.isFinite(targetValue)) {
+      subtotal[column.fieldCode].value += targetValue; //数値の場合、合計
+    } else if (column.calc == 'count') {
+      subtotal[column.fieldCode].value += 1; //数値以外の場合、件数
     }
   }
 
@@ -261,7 +252,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
     const templatePdfFileKey = await getPdfFileKey(CONFIG_PDF.appId, CONFIG_PDF.recordId, CONFIG_PDF.attachment); //ひな形pdfのfileKey取得
     if (!templatePdfFileKey) {
       await kintone.showNotification('ERROR', '請求書雛形PDFが設定されていません。');
-      //alert('請求書雛形PDFが設定されていません。');
       return;
     }
     try {
@@ -279,14 +269,13 @@ import { PDFDocument, rgb } from 'pdf-lib';
         fontBytes = await getFileData(fontFileKey); // フォントファイルを取得
 
         customFont = await pdfDoc.embedFont(fontBytes, { subset: true }); //サブセット化すると、フォントによっては一部の文字が表示されなくなる可能性あるのでフォント変更時は確認すること
-        //customFont = await pdfDoc.embedFont(fontBytes); //ドキュメントにフォントを埋め込む(ファイルサイズが大きくなる)
+        //customFont = await pdfDoc.embedFont(fontBytes); //ドキュメントにフォントをそのまま埋め込む(ファイルサイズが大きくなる)
       } catch (error) {
         throw new Error('フォントファイル取得エラー\n' + error.message);
       }
 
       //全体のページ数
       let totalPage = 1;
-      //if (params.hasOwnProperty('pageBreakTable')) {
       if (CONFIG_PAGE_BREAK_TABLE.fieldCode) {
         totalPage = Math.ceil(record[CONFIG_PAGE_BREAK_TABLE.fieldCode].value.length / CONFIG_PAGE_BREAK_TABLE.maxRow); //サブテーブルの行数 ÷ １ページ当たりの行数
       }
@@ -304,10 +293,14 @@ import { PDFDocument, rgb } from 'pdf-lib';
         }
         [copiedPage] = await pdfDoc.copyPages(pdfDoc, [pageCount]); //編集前のページを退避させ、次ページ作成時に使用する
 
+        /** パラメタの内容に応じて文字列をPDFへ描画する(drawTextPdfFuncの戻り値)
+         * @param {object} param PDFへ描画するためのパラメタ
+         * @param {object} record kintoneレコードもしくはサブテーブルの1行
+         * @param {number} y 縦位置
+         */
         const drawTextPdf = drawTextPdfFunc(page, customFont); //テキスト描画用の関数作成(ページ毎に作成する必要がある)
 
         //ページ数の描画
-        //if (params.hasOwnProperty('pageCount')) {
         if (CONFIG_PAGECOUNT.type != 'no') {
           let pageValue = '';
           const currentPage = pageCount + 1;
@@ -319,8 +312,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
           page.drawText(pageValue, { x: CONFIG_PAGECOUNT.x, y: CONFIG_PAGECOUNT.y, font: customFont, size: CONFIG_PAGECOUNT.size });
         }
 
-        //テキスト
-        //if (params.hasOwnProperty('text')) {
+        //テキスト(設定したテーブルが1行以上あり、1行目のフィールドコードが設定されていること)設定したテーブルが0行もしくは1行目のフィールドコードが未設定の場合は何もしない
         if (CONFIG_TEXT.length > 0 && CONFIG_TEXT[0].fieldCode) {
           for (const drawItem of CONFIG_TEXT) {
             //描画する対象ページの判定
@@ -330,8 +322,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
           }
         }
 
-        //画像
-        //if (params.hasOwnProperty('image')) {
+        //画像(設定したテーブルが1行以上あり、1行目のフィールドコードが設定されていること)設定したテーブルが0行もしくは1行目のフィールドコードが未設定の場合は何もしない
         if (CONFIG_IMAGE.length > 0 && CONFIG_IMAGE[0].fieldCode) {
           for (const drawItem of CONFIG_IMAGE) {
             //描画する対象ページの判定
@@ -344,15 +335,12 @@ import { PDFDocument, rgb } from 'pdf-lib';
                   let widthRatio = 0;
                   let heightRatio = 0;
                   //幅の割合指定
-                  //if (drawItem.hasOwnProperty('widthRatio')) {
                   if (drawItem.widthRatio) {
                     widthRatio = drawItem.widthRatio;
                     heightRatio = drawItem.hasOwnProperty('heightRatio') ? drawItem.heightRatio : drawItem.widthRatio; //heightがない場合、幅と同じ割合
                     //幅指定
-                    //} else if (drawItem.hasOwnProperty('width')) {
                   } else if (drawItem.width) {
                     widthRatio = drawItem.width / signatureImage.width; //指定した幅になるように割合調節
-                    //heightRatio = drawItem.hasOwnProperty('height') ? drawItem.height / signatureImage.height : widthRatio;
                     heightRatio = drawItem.height ? drawItem.height / signatureImage.height : widthRatio;
                   } else {
                     throw new Error(fieldCode + 'の幅が設定されていません');
@@ -376,16 +364,14 @@ import { PDFDocument, rgb } from 'pdf-lib';
           }
         }
 
-        //サブテーブル
-        //if (params.hasOwnProperty('table')) {
+        //サブテーブル(サブテーブルのフィールドコードが設定されている場合)
         if (CONFIG_TABLE.fieldCode) {
           const drawItem = CONFIG_TABLE;
-          //for (const drawItem of CONFIG_TABLE) {
           //描画する対象ページの判定
           if (isTargetPage(drawItem, pageCount, totalPage)) {
             let y = drawItem.y; //y座標の初期値
             //サブテーブルの行数
-            for (let rowCount = 0; record[drawItem.fieldCode].value.length > rowCount; rowCount++) {
+            for (let rowCount = 0; record[drawItem.fieldCode].value.length > rowCount && drawItem.maxRow > rowCount; rowCount++) {
               const recordRow = record[drawItem.fieldCode].value[rowCount];
               let maxHeight = 0;
               //tableプロパティの項目数
@@ -399,7 +385,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
           }
         }
         //改ページ考慮ありのサブテーブル
-        //if (params.hasOwnProperty('pageBreakTable')) {
         if (CONFIG_PAGE_BREAK_TABLE.fieldCode) {
           const drawItem = CONFIG_PAGE_BREAK_TABLE; //改ページ考慮ありのテーブルは一つだけ設定可
           let y = drawItem.y; //y座標の初期値
@@ -407,7 +392,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
           const subtotal = {}; //小計用オブジェクト
 
           //サブテーブルの行(複数ページ考慮のため、前頁までに描画し終えた行を初期値とする)
-          for (let rowCount = nextPageRowCount; record[drawItem.fieldCode].value.length > rowCount; rowCount++) {
+          //for (let rowCount = nextPageRowCount; record[drawItem.fieldCode].value.length > rowCount; rowCount++) {
+          for (let rowCount = nextPageRowCount; true; rowCount++) {
             const recordRow = record[drawItem.fieldCode].value[rowCount];
             let maxHeight = 0;
             //１行分の出力項目
@@ -419,6 +405,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
             y -= calcOffset(drawItem, maxHeight); //次の行のy軸座標算出
             if (rowCount + 1 >= record[drawItem.fieldCode].value.length) {
               rowAllDraw = true; //サブテーブル全ての行を描画し終えたらtrue
+              break;
             }
             if (rowCount + 1 - nextPageRowCount >= drawItem.maxRow) {
               nextPageRowCount = rowCount + 1; //1ページ当たりの描画行数を描画し終えたら行数を退避してループを抜ける
@@ -429,7 +416,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
           //小計行の描画(プロパティが存在しない場合はfalse)
           if (CONFIG_PAGE_BREAK_TABLE.subtotal == 'true') {
             let subtotal_y = y; //一旦、現在のy座標取得
-            //if (CONFIG_PAGE_BREAK_TABLE.hasOwnProperty('y_Offset')) {
             if (CONFIG_PAGE_BREAK_TABLE.y_Offset) {
               subtotal_y = CONFIG_PAGE_BREAK_TABLE.y - CONFIG_PAGE_BREAK_TABLE.y_Offset * CONFIG_PAGE_BREAK_TABLE.maxRow; //y_Offsetがあれば最大行の１行下に描画
             }
@@ -437,7 +423,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
               //小計行の描画項目(プロパティが存在しない場合はfalse)
               if (column.calc == 'sum' || column.calc == 'count') {
                 const subtotalColumn = structuredClone(column); //ディープコピー
-                //if (subtotalColumn.hasOwnProperty('maxWidth')) {
                 if (subtotalColumn.maxWidth) {
                   subtotalColumn.x += subtotalColumn.maxWidth; //maxWidthの指定があれば、最大幅の位置で右寄せする
                   subtotalColumn.align = 'right'; //小計行は、全て右寄せ→明細行の位置と合わせることができないので設定しないようにした
@@ -470,7 +455,6 @@ import { PDFDocument, rgb } from 'pdf-lib';
     } catch (error) {
       console.error('PDF出力エラー:', error.message);
       await kintone.showNotification('ERROR', 'PDF出力に失敗しました。\n' + error.message);
-      //alert('PDF出力に失敗しました。\n' + error.message);
     }
   }
   //★★★★★★★★★★★★★★★★★★★★★★★★★★★★
@@ -479,28 +463,23 @@ import { PDFDocument, rgb } from 'pdf-lib';
   kintone.events.on(['app.record.detail.show'], (event) => {
     const record = event.record;
     const printButton = document.createElement('button');
-    //if (params.hasOwnProperty('textContent')) {
+    printButton.textContent = 'PDF出力';
     if (CONFIG_BUTTON.textContent) {
       printButton.textContent = CONFIG_BUTTON.textContent;
-    } else {
-      printButton.textContent = 'PDF出力';
     }
 
     printButton.className = 'kintoneplugin-button-dialog-ok';
+    //ボタンクリック時のイベント登録
     printButton.addEventListener('click', async () => {
-      //printButton.disabled = true; // クリックされたらボタンを無効化
-      //printButton.className = 'kintoneplugin-button-disabled';
-      await kintone.showLoading('VISIBLE');
+      await kintone.showLoading('VISIBLE'); //スピナー表示
       try {
         await pdfCreate(record);
       } finally {
-        //printButton.disabled = false; // 処理が完了したらボタンを有効化
-        //printButton.className = 'kintoneplugin-button-dialog-ok';
-        await kintone.showLoading('HIDDEN');
+        await kintone.showLoading('HIDDEN'); //スピナー非表示
       }
     });
+
     let buttonSpaceName = 'ButtonSpace';
-    //if (CONFIG_BUTTON.hasOwnProperty('spaceField')) {
     if (CONFIG_BUTTON.spaceField) {
       buttonSpaceName = CONFIG_BUTTON.spaceField;
     }
