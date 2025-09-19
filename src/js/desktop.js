@@ -78,25 +78,28 @@ import { PDFDocument, rgb } from 'pdf-lib';
         }
         //日付・日時
         if (param.format === 'date' || param.format === 'datetime') {
-          const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-          };
-          //日時の場合
-          if (param.format === 'datetime') {
-            options.hour = '2-digit';
-            options.minute = '2-digit';
-            options.hour12 = false; // 24時間表示
-          }
+          //未入力の場合に「Invalid Date」としないための考慮
+          if (targetText) {
+            const options = {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            };
+            //日時の場合
+            if (param.format === 'datetime') {
+              options.hour = '2-digit';
+              options.minute = '2-digit';
+              options.hour12 = false; // 24時間表示
+            }
 
-          let date;
-          if (targetText.includes('T')) {
-            date = new Date(targetText); // 日時フィールドの場合（例: '2025-09-02T15:00:00Z'）
-          } else {
-            date = new Date(targetText + 'T00:00:00Z'); // 日付フィールド場合（例: '2025-09-03'）タイムゾーンを統一するために、'T00:00:00Z'を加えてUTCとして解釈させる
+            let date;
+            if (targetText.includes('T')) {
+              date = new Date(targetText); // 日時フィールドの場合（例: '2025-09-02T15:00:00Z'）
+            } else {
+              date = new Date(targetText + 'T00:00:00Z'); // 日付フィールド場合（例: '2025-09-03'）タイムゾーンを統一するために、'T00:00:00Z'を加えてUTCとして解釈させる
+            }
+            targetText = date.toLocaleString('ja-JP', options).replace(/\//g, '-'); // toLocaleString()でローカルタイムゾーンの形式に変換
           }
-          targetText = date.toLocaleString('ja-JP', options).replace(/\//g, '-'); // toLocaleString()でローカルタイムゾーンの形式に変換
         }
 
         //文字位置
