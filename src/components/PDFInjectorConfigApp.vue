@@ -1,4 +1,7 @@
 <template>
+  <div id="loading-overlay" v-if="isLoading">
+    <div class="spinner"></div>
+  </div>
   <div class="plugin-config-container">
     <h1 class="page-title">PDFへのデータ出力プラグイン</h1>
 
@@ -630,30 +633,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { setDropDown, isDuplicateError, getAllApps, cancel } from './kintonePluginCommonFunction.js';
 
-const props = defineProps({
-  initialConfig: Object,
-  optionText: Array,
-  optionImage: Array,
-  optionTable: Array,
-  optionSpace: Array,
-  optionPdfAttachmentFields: Array,
-  optionFontAttachmentFields: Array,
-  optionPageBreakTableText: Array,
-  optionTableText: Array,
-  optionPdfUseFileNameFields: Array,
-  allApps: Array,
-  targetAppAllText: Array,
-  getAttachmentFields: {
-    type: Function,
-    default: () => {},
-  },
-  setDropDown: {
-    type: Function,
-    default: () => {},
-  },
-});
+const props = defineProps(['initialConfig']);
 
 //ドロップダウンで指定する内容
 const optionPageCountType = ref([
@@ -701,17 +684,18 @@ const configImage = ref(props.initialConfig.configImage);
 const configPageBreakTable = ref(props.initialConfig.configPageBreakTable);
 const configTable = ref(props.initialConfig.configTable);
 
-const optionText = ref(props.optionText);
-const optionImage = ref(props.optionImage);
-const optionTable = ref(props.optionTable);
-const optionSpace = ref(props.optionSpace);
-const optionPdfAttachmentFields = ref(props.optionPdfAttachmentFields);
-const optionFontAttachmentFields = ref(props.optionFontAttachmentFields);
-const optionPageBreakTableText = ref(props.optionPageBreakTableText);
-const optionTableText = ref(props.optionTableText);
-const allApps = ref(props.allApps);
-const optionPdfUseFileNameFields = ref(props.optionPdfUseFileNameFields);
-const targetAppAllText = ref(props.targetAppAllText);
+const optionText = ref([]);
+const optionImage = ref([]);
+const optionTable = ref([]);
+const optionSpace = ref([]);
+const optionPdfAttachmentFields = ref([]);
+const optionFontAttachmentFields = ref([]);
+const optionPageBreakTableText = ref([]);
+const optionTableText = ref([]);
+const optionPdfUseFileNameFields = ref([]);
+const targetAppAllText = ref([]);
+
+const isLoading = ref(true); // 初期描画時にローディングを表示
 
 // エラー関連の変数
 const errors = ref({
@@ -724,6 +708,8 @@ const errors = ref({
   pageBreakTable: { hasError: false, message: '' },
   table: { hasError: false, message: '' },
 });
+
+const allApps = [];
 
 // 数値項目を定義(範囲、整数のみ許可、エラー時のメッセージ等)
 const numericFields = {
@@ -807,6 +793,57 @@ const requiredTableFields = [
   },
 ];
 
+// onMountedで初期データを取得
+onMounted(async () => {
+  try {
+    const allAppsArray = await getAllApps(); //サブドメイン内の全てのアプリ
+    for (const apps of allAppsArray) {
+      allApps.push({ appId: apps.appId, appName: apps.name, attachmentFields: [], isSearched: false });
+    }
+
+    if (configPdf.value.appId) {
+      const targetApp = allApps.find((item) => item.appId == configPdf.value.appId); //対象となるアプリの指定(PDF雛形)
+      optionPdfAttachmentFields.value = await getAttachmentFields(configPdf.value.appId, targetApp); //指定したアプリの添付ファイルフィールド
+    }
+    if (configFont.value.appId) {
+      const targetApp = allApps.find((item) => item.appId == configPdf.value.appId); //対象となるアプリの指定(フォント)
+      optionFontAttachmentFields.value = await getAttachmentFields(configFont.value.appId, targetApp); //指定したアプリの添付ファイルフィールド
+    }
+
+    const targetFieldsImage = await KintoneConfigHelper.getFields(['FILE']); //自アプリの添付ファイル
+    optionImage.value = setDropDown(targetFieldsImage);
+
+    const targetFieldsTable = await KintoneConfigHelper.getFields(['SUBTABLE']); //自アプリのサブテーブル
+    optionTable.value = setDropDown(targetFieldsTable);
+
+    const targetFieldsUseFileName = await KintoneConfigHelper.getFields(['SINGLE_LINE_TEXT', 'NUMBER']);
+    optionPdfUseFileNameFields.value = setDropDown(targetFieldsUseFileName); //PDFの出力ファイル名の一部として使用するフィールド
+
+    const targetFieldsAll = await KintoneConfigHelper.getFields();
+    const targetAppAllText = targetFieldsAll.filter((item) => item.type !== 'FILE' && item.type !== 'SUBTABLE' && item.type !== 'SPACER'); //添付ファイルとサブテーブルを除く全てのフィールド
+    optionText.value = setDropDown(targetAppAllText); //PDFへ描画するフィールド
+
+    if (configPageBreakTable.value.fieldCode) {
+      optionPageBreakTableText.value = setDropDown(targetAppAllText, configPageBreakTable.value.fieldCode); //改ページを行うサブテーブル内のフィールド一覧
+    }
+
+    if (configTable.value.fieldCode) {
+      optionTableText.value = setDropDown(targetAppAllText, configTable.value.fieldCode); //その他のサブテーブル内のフィールド一覧
+    }
+
+    const spaceFields = await KintoneConfigHelper.getFields('SPACER');
+    // スペースフィールドは「code」ではなく「elementId」が取得されるため、コードを変換
+    for (const item of spaceFields) {
+      item.code = item.elementId;
+    }
+    optionSpace.value = setDropDown(spaceFields);
+  } catch (error) {
+    errors.value.button = { hasError: true, message: error.message };
+  } finally {
+    isLoading.value = false; // 処理が完了したらローディングを非表示にする
+  }
+});
+
 // 数値項目の入力時チェック(isNumericErrorのラッパー関数)
 const inputNumeric = (targetItem) => {
   return isNumericError(numericFields[targetItem]);
@@ -825,20 +862,6 @@ const isNumericError = (param) => {
     return true;
   }
   return false;
-};
-
-/** テーブル内でのフィールド重複のバリデーション
- * @param param チェック対象要素(param[prop]がarrayに複数存在するかチェック)
- * @param array 重複をチェックする配列
- * @param prop チェック対象プロパティ
- * @returns 重複がある場合、true
- */
-const isDuplicateError = (param, array, prop) => {
-  // 空文字は重複とみなさない
-  if (!param[prop]) return false;
-  const allOutputFields = array.map((p) => p[prop]).filter((f) => f !== '');
-  const count = allOutputFields.filter((f) => f === param[prop]).length;
-  return count > 1;
 };
 
 /** ＰＤＦ雛形とフォントが同じフィールドを指定している
@@ -936,9 +959,9 @@ const appIdChange = async (event, target) => {
   const targetConfig = target === 'pdf' ? configPdf.value : configFont.value;
   const targetOptions = target === 'pdf' ? optionPdfAttachmentFields : optionFontAttachmentFields;
 
-  const targetApp = allApps.value.find((item) => item.appId == appId);
+  const targetApp = allApps.find((item) => item.appId == appId);
   if (targetApp) {
-    const attachmentFields = await props.getAttachmentFields(appId, targetApp);
+    const attachmentFields = await getAttachmentFields(appId, targetApp);
     targetConfig.name = targetApp.appName;
     targetOptions.value = attachmentFields;
   } else {
@@ -953,7 +976,7 @@ const appIdChange = async (event, target) => {
 const targetTableChange = async (event, target) => {
   const selectedFieldCode = event.target.value;
   // サブテーブル内のフィールド選択肢を取得
-  const fields = props.setDropDown(targetAppAllText.value, selectedFieldCode);
+  const fields = setDropDown(targetAppAllText.value, selectedFieldCode);
 
   if (target === 'pageBreak') {
     // ファクトリ関数を使って新しい行でリセット
@@ -963,6 +986,36 @@ const targetTableChange = async (event, target) => {
     // ファクトリ関数を使って新しい行でリセット
     configTable.value.column = [createTableRow()];
     optionTableText.value = fields;
+  }
+};
+
+//★★★★★★★★★★★★★★★★★★★★★★★★★★★
+/** 添付ファイルアプリのフィールド情報を取得
+ * @param {string} appId アプリＩＤ
+ * @param {object} targetApp getAllAppsで作成した全アプリのうち、appIdで指定したアプリＩＤ
+ * @returns appIdで指定したアプリＩＤの添付ファイルフィールド
+ */
+//★★★★★★★★★★★★★★★★★★★★★★★★★★★
+const getAttachmentFields = async (appId, targetApp) => {
+  try {
+    if (targetApp) {
+      if (!targetApp.isSearched) {
+        const formResp = await kintone.api(kintone.api.url('/k/v1/app/form/fields.json', true), 'GET', { app: appId });
+        for (const fieldCode in formResp.properties) {
+          const field = formResp.properties[fieldCode];
+          if (field.type == 'FILE') {
+            targetApp.attachmentFields.push({ id: field.code, label: field.label, code: field.code });
+          }
+        }
+        targetApp.isSearched = true; //同じアプリに対して、何度もapiを呼び出さないためのフラグ
+      }
+      return targetApp.attachmentFields;
+    } else {
+      return [];
+    }
+  } catch (e) {
+    console.error('アプリの添付ファイルフィールド取得に失敗しました。', e);
+    throw new Error(`アプリの添付ファイルフィールド取得に失敗しました。エラー: ${e.message}`);
   }
 };
 
@@ -993,11 +1046,6 @@ const register = () => {
     console.error('name: ' + e.name + ' message: ' + e.message);
     errors.value.button = { hasError: true, message: `設定の保存中にエラーが発生しました。\nエラー内容: ${e.message}` };
   }
-};
-
-//キャンセルボタンクリック時
-const cancel = () => {
-  window.location.href = '/k/admin/app/' + kintone.app.getId() + '/plugin/';
 };
 
 // 各テーブル行のデフォルト値を生成するファクトリ関数群
@@ -1064,6 +1112,38 @@ const removeItemTableText = (index) => {
 </script>
 
 <style scoped>
+/* ローディングオーバーレイ */
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* 他の要素より前面に表示 */
+}
+/* スピナー本体 */
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3; /* ライトグレー */
+  border-top: 5px solid #3498db; /* kintoneの青色に近い */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+/* スピナーのアニメーション */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* 基本的なリセットとフォント */
 .plugin-config-container {
   font-family: 'Inter', 'Noto Sans JP', sans-serif; /* モダンなフォント優先 */

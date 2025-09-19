@@ -35,82 +35,6 @@ import PDFInjectorConfigApp from '../components/PDFInjectorConfigApp.vue';
   }
 
   //★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  /** 添付ファイルアプリのフィールド情報を取得
-   * @param {string} appId アプリＩＤ
-   * @param {object} targetApp getAllAppsで作成した全アプリのうち、appIdで指定したアプリＩＤ
-   * @returns appIdで指定したアプリＩＤの添付ファイルフィールド
-   */
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  async function getAttachmentFields(appId, targetApp) {
-    try {
-      //const targetApp = allApps.find((item) => item.appId == appId);
-      if (targetApp) {
-        if (!targetApp.isSearched) {
-          const formResp = await kintone.api(kintone.api.url('/k/v1/app/form/fields.json', true), 'GET', { app: appId });
-          for (const fieldCode in formResp.properties) {
-            const field = formResp.properties[fieldCode];
-            if (field.type == 'FILE') {
-              targetApp.attachmentFields.push({ id: field.code, label: field.label, code: field.code });
-            }
-          }
-          targetApp.isSearched = true; //同じアプリに対して、何度もapiを呼び出さないためのフラグ
-        }
-        return targetApp.attachmentFields;
-      } else {
-        return [];
-      }
-    } catch (e) {
-      console.error('アプリの添付ファイルフィールド取得に失敗しました。', e);
-      throw new Error(`アプリの添付ファイルフィールド取得に失敗しました。エラー: ${e.message}`);
-    }
-  }
-
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  /** ドロップダウン共通関数
-   * @param {object[]} fieldArray フィールドの一覧
-   * @param {*} [subtableCode=null] サブテーブル内のフィールドの場合、対象となるサブテーブルのフィールド名
-   * @returns ドロップダウン作成用の配列
-   */
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  function setDropDown(fieldArray, subtableCode = null) {
-    const result = [];
-    for (const field of fieldArray) {
-      let id = field.code;
-      let code = escapeHtml(field.code);
-      let type = field.type;
-      //KintoneConfigHelper.getFieldsでは、サブテーブル内のフィールドは「subtableCode」にサブテーブル名を持っている
-      if (!field.hasOwnProperty('subtableCode')) {
-        if (!subtableCode) {
-          const addItem = {
-            id: id,
-            code: code,
-            type: type,
-          };
-          result.push(addItem);
-        }
-      } else {
-        if (field.subtableCode == subtableCode) {
-          const addItem = {
-            id: id,
-            code: code,
-            type: type,
-          };
-          result.push(addItem);
-        }
-      }
-    }
-    return result;
-  }
-
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  //★ エスケープ文字の置換関数 (async/await の外側で定義)
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  function escapeHtml(htmlstr) {
-    // HTMLエスケープ文字を正しく修正します
-    return htmlstr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  //★★★★★★★★★★★★★★★★★★★★★★★★★★★
   //★ 非同期処理（設定取得とフィールド情報取得）を Vue アプリ作成より前に行う
   //★★★★★★★★★★★★★★★★★★★★★★★★★★★
   const config = kintone.plugin.app.getConfig(PLUGIN_ID);
@@ -179,49 +103,6 @@ import PDFInjectorConfigApp from '../components/PDFInjectorConfigApp.vue';
     configTable = JSON.parse(config['configTable']);
   }
 
-  const allApps = await getAllApps(); //サブドメイン内の全てのアプリ
-
-  let optionPdfAttachmentFields;
-  if (configPdf.appId) {
-    const targetApp = allApps.find((item) => item.appId == configPdf.appId); //対象となるアプリの指定(PDF雛形)
-    optionPdfAttachmentFields = await getAttachmentFields(configPdf.appId, targetApp); //指定したアプリの添付ファイルフィールド
-  }
-  let optionFontAttachmentFields;
-  if (configFont.appId) {
-    const targetApp = allApps.find((item) => item.appId == configPdf.appId); //対象となるアプリの指定(フォント)
-    optionFontAttachmentFields = await getAttachmentFields(configFont.appId, targetApp); //指定したアプリの添付ファイルフィールド
-  }
-
-  const targetFieldsImage = await KintoneConfigHelper.getFields(['FILE']); //自アプリの添付ファイル
-  const optionImage = setDropDown(targetFieldsImage);
-
-  const targetFieldsTable = await KintoneConfigHelper.getFields(['SUBTABLE']); //自アプリのサブテーブル
-  const optionTable = setDropDown(targetFieldsTable);
-
-  const targetFieldsUseFileName = await KintoneConfigHelper.getFields(['SINGLE_LINE_TEXT', 'NUMBER']);
-  const optionPdfUseFileNameFields = setDropDown(targetFieldsUseFileName); //PDFの出力ファイル名の一部として使用するフィールド
-
-  const targetFieldsAll = await KintoneConfigHelper.getFields();
-  const targetAppAllText = targetFieldsAll.filter((item) => item.type !== 'FILE' && item.type !== 'SUBTABLE' && item.type !== 'SPACER'); //添付ファイルとサブテーブルを除く全てのフィールド
-  const optionText = setDropDown(targetAppAllText); //PDFへ描画するフィールド
-
-  let optionPageBreakTableText = [];
-  if (configPageBreakTable.fieldCode) {
-    optionPageBreakTableText = setDropDown(targetAppAllText, configPageBreakTable.fieldCode); //改ページを行うサブテーブル内のフィールド一覧
-  }
-
-  let optionTableText = [];
-  if (configTable.fieldCode) {
-    optionTableText = setDropDown(targetAppAllText, configTable.fieldCode); //その他のサブテーブル内のフィールド一覧
-  }
-
-  const spaceFields = await KintoneConfigHelper.getFields('SPACER');
-  // スペースフィールドは「code」ではなく「elementId」が取得されるため、コードを変換
-  for (const item of spaceFields) {
-    item.code = item.elementId;
-  }
-  const optionSpace = setDropDown(spaceFields);
-
   // Vueコンポーネントに渡す初期データとオプション
   const initialConfig = {
     configButton,
@@ -245,19 +126,6 @@ import PDFInjectorConfigApp from '../components/PDFInjectorConfigApp.vue';
   //★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
   const app = createApp(PDFInjectorConfigApp, {
     initialConfig: initialConfig,
-    optionText: optionText,
-    optionImage: optionImage,
-    optionTable: optionTable,
-    optionSpace: optionSpace,
-    optionPdfAttachmentFields: optionPdfAttachmentFields,
-    optionFontAttachmentFields: optionFontAttachmentFields,
-    optionPageBreakTableText: optionPageBreakTableText,
-    optionTableText: optionTableText,
-    optionPdfUseFileNameFields: optionPdfUseFileNameFields,
-    allApps: allApps,
-    targetAppAllText: targetAppAllText,
-    getAttachmentFields: getAttachmentFields,
-    setDropDown: setDropDown,
   });
   const vm = app.mount('#app');
 })(kintone.$PLUGIN_ID);
