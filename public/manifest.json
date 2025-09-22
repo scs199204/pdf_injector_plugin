@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "version": "0.0.1",
+  "version": "0.0.0",
   "type": "APP",
   "desktop": {
     "js": ["js/desktop.js"],
@@ -11,18 +11,18 @@
     "html": "html/config.html",
     "js": ["js/kintone-config-helper.js", "js/config.js"],
     "css": [],
-    "required_params": []
+    "required_params": ["configButton", "configPdf", "configFont"]
   },
   "name": {
-    "ja": "PDFへのデータ出力プラグイン",
+    "ja": "【ＳＤＰ】PDFへのデータ出力プラグイン",
     "en": "PDF Data Injector Plug-in"
   },
   "description": {
     "ja": "PDFファイルに、文字および画像を出力する。",
-    "en": "dynamic dropdown Plug-in"
+    "en": "PDF Data Injector Plug-in"
   },
   "homepage_url": {
-    "ja": "https://cybozu.dev/ja/kintone/tips/development/customize/file/steps-upload-files/",
-    "en": "https://cybozu.dev/ja/kintone/tips/development/customize/file/steps-upload-files/"
+    "ja": "https://cybozu.dev/ja/kintone/tips/development/plugins/development-plugin/development-kintone-plugin/",
+    "en": "https://cybozu.dev/ja/kintone/tips/development/plugins/development-plugin/development-kintone-plugin/"
   }
 }
