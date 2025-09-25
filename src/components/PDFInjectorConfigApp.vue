@@ -629,6 +629,12 @@
       <button @click="register" class="action-button primary-button">登録</button>
       <button @click="cancel" class="action-button secondary-button" type="button">キャンセル</button>
     </div>
+    <div v-if="showSuccessModal" class="custom-modal-overlay">
+      <div class="custom-modal">
+        <p>プラグインの設定が保存されました！アプリを更新してください！</p>
+        <button @click="closeSuccessModal" class="action-button primary-button">OK</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -696,6 +702,7 @@ const optionPdfUseFileNameFields = ref([]);
 const targetAppAllText = ref([]);
 
 const isLoading = ref(true); // 初期描画時にローディングを表示
+const showSuccessModal = ref(false); // カスタムモーダルの表示用
 
 // エラー関連の変数
 const errors = ref({
@@ -1047,13 +1054,18 @@ const register = () => {
     };
 
     kintone.plugin.app.setConfig(param, () => {
-      alert('プラグインの設定が保存されました！アプリを更新してください！');
-      window.location.href = '/k/admin/app/flow?app=' + kintone.app.getId();
+      showSuccessModal.value = true;
     });
   } catch (e) {
     console.error('name: ' + e.name + ' message: ' + e.message);
     errors.value.button = { hasError: true, message: `設定の保存中にエラーが発生しました。\nエラー内容: ${e.message}` };
   }
+};
+
+//モーダルウィンドウを閉じて、設定画面へ遷移
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  window.location.href = '/k/admin/app/flow?app=' + kintone.app.getId();
 };
 
 // 各テーブル行のデフォルト値を生成するファクトリ関数群
@@ -1459,5 +1471,37 @@ select {
 .color-display {
   font-family: monospace;
   font-size: 14px;
+}
+
+/* カスタムモーダル :global…VueのScoped CSS内でそのクラスをグローバルなスタイルとして適用できる */
+:global(.custom-modal-overlay) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+:global(.custom-modal) {
+  background-color: #fff;
+  padding: 40px 60px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  border: 1px solid #e0e7eb;
+}
+
+:global(.custom-modal p) {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
 }
 </style>
