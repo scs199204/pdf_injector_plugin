@@ -38,7 +38,7 @@ export default defineConfig(() => {
           //name: `${target}Plugin`,
         },
       },
-      sourcemap: true,
+      sourcemap: 'inline',
       emptyOutDir: false,
     },
   };

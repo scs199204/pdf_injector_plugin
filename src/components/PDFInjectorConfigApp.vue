@@ -711,7 +711,15 @@ const errors = ref({
 
 const allApps = [];
 
-// 数値項目を定義(範囲、整数のみ許可、エラー時のメッセージ等)
+/** 数値項目を定義(範囲、整数のみ許可、エラー時のメッセージ等)
+ * @property {number} min 許可する数値の最小値
+ * @property {number} max 許可する数値の最大値
+ * @property {boolean} isInteger true 数値は整数のみ
+ * @property {any} config 判定対象のオブジェクト
+ * @property {string} key 判定対象のオブジェクトのプロパティ
+ * @property {string} errorKey errors.valueのプロパティ
+ * @property {string} message エラーメッセージ
+ */
 const numericFields = {
   pdfAppId: { min: 1, max: 999999, isInteger: true, config: configPdf.value, key: 'appId', errorKey: 'pdf', message: 'アプリIDの数値を正しく入力してください' },
   pdfRecordId: { min: 1, max: 999999, isInteger: true, config: configPdf.value, key: 'recordId', errorKey: 'pdf', message: 'レコード番号の数値を正しく入力してください' },
@@ -846,13 +854,13 @@ onMounted(async () => {
 
 // 数値項目の入力時チェック(isNumericErrorのラッパー関数)
 const inputNumeric = (targetItem) => {
-  return isNumericError(numericFields[targetItem]);
+  return isNumericError(numericFields[targetItem]); //例)numericFields.pdfAppIdを引数で渡す
 };
 
 //数値の入力チェック
 const isNumericError = (param) => {
-  const target = param.config[param.key];
-  const min = param.min;
+  const target = param.config[param.key]; //「numericFields.pdfAppId.config」は、「configPdf.value」を指す。configPdf.value.appIdをtargetに移送
+  const min = param.min; //numericFields.pdfAppId.min
   const max = param.max;
   const isInteger = param.isInteger;
   if (target < min || target > max) {
